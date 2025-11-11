@@ -29,10 +29,15 @@ import baubles.api.BaubleType;
 import baubles.api.BaublesApi;
 import baubles.api.IBauble;
 import baubles.api.cap.IBaublesItemHandler;
+import baubles.api.render.IRenderBauble;
 import net.dries007.holoInventory.HoloInventory;
 import net.dries007.holoInventory.api.IHoloGlasses;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.renderer.GlStateManager;
+import baubles.api.render.IRenderBauble.RenderType;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -46,6 +51,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
+import net.minecraftforge.fml.common.Optional.InterfaceList;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -53,15 +59,18 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * HoloGlasses item that allows players to see holographic inventory displays.
  * Works as both armor (helmet slot) and as a Baubles accessory.
  */
-@Optional.Interface(iface = "baubles.api.IBauble", modid = "baubles")
-public class ItemHoloGlasses extends ItemArmor implements IHoloGlasses, IBauble
+@Optional.InterfaceList({
+    @Optional.Interface(iface = "baubles.api.IBauble", modid = "baubles"),
+    @Optional.Interface(iface = "baubles.api.render.IRenderBauble", modid = "baubles")
+})
+public class ItemHoloGlasses extends ItemArmor implements IHoloGlasses, IBauble, IRenderBauble
 {
     // Custom armor material for Holo Glasses
     private static final ArmorMaterial HOLO_MATERIAL = EnumHelper.addArmorMaterial(
         "HOLO", 
         HoloInventory.MODID + ":hologlasses", 
-        15, // durability multiplier
-        new int[]{0, 0, 0, 1}, // damage reduction amounts (boots, legs, chest, helmet)
+        0, // durability multiplier - 0 means no durability
+        new int[]{0, 0, 0, 0}, // damage reduction amounts (boots, legs, chest, helmet)
         25, // enchantability
         null, // sound event - using null for generic sound
         0.0F // toughness
@@ -70,7 +79,7 @@ public class ItemHoloGlasses extends ItemArmor implements IHoloGlasses, IBauble
     public ItemHoloGlasses()
     {
         super(HOLO_MATERIAL, 0, EntityEquipmentSlot.HEAD);
-        this.setUnlocalizedName("Hologlasses");
+        this.setUnlocalizedName("hologlasses");
         this.setRegistryName(HoloInventory.MODID, "hologlasses");
         this.setCreativeTab(CreativeTabs.TOOLS);
         this.setMaxStackSize(1);
@@ -86,7 +95,7 @@ public class ItemHoloGlasses extends ItemArmor implements IHoloGlasses, IBauble
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn)
     {
-        tooltip.add(TextFormatting.GOLD + I18n.format("item.Hologlasses.tooltip"));
+        tooltip.add(TextFormatting.GOLD + I18n.format("item.hologlasses.tooltip"));
     }
 
     @Override
@@ -150,6 +159,44 @@ public class ItemHoloGlasses extends ItemArmor implements IHoloGlasses, IBauble
 
     @Override
     @Optional.Method(modid = "baubles")
+    public boolean hasContainerItem(ItemStack stack)
+    {
+        return false;
+    }
+
+    @Override
+    @Optional.Method(modid = "baubles")
+    public boolean willAutoSync(ItemStack itemstack, EntityLivingBase player)
+    {
+        return true;
+    }
+
+    @Override
+    @Optional.Method(modid = "baubles")
+    @SideOnly(Side.CLIENT)
+    public ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, ModelBiped _default)
+    {
+        // Return the default armor model - Baubles will use this for rendering
+        return _default;
+    }
+
+    // Override to make Baubles render this as armor
+    @Override  
+    @Optional.Method(modid = "baubles")
+    public boolean hasEffect(ItemStack stack)
+    {
+        return false; // No enchantment glint
+    }
+
+    // This method tells Baubles to render the armor model
+    @Optional.Method(modid = "baubles")
+    public boolean shouldRenderAsArmor()
+    {
+        return true;
+    }
+
+    @Override
+    @Optional.Method(modid = "baubles")
     public void onEquipped(ItemStack itemstack, EntityLivingBase player)
     {
         // No special equip behavior needed
@@ -174,5 +221,39 @@ public class ItemHoloGlasses extends ItemArmor implements IHoloGlasses, IBauble
     public boolean canUnequip(ItemStack itemstack, EntityLivingBase player)
     {
         return true;
+    }
+
+    @Override
+    public boolean isDamageable()
+    {
+        return false;
+    }
+
+    @Override
+    public int getMaxDamage(ItemStack stack)
+    {
+        return 0;
+    }
+
+    @Override
+    public boolean hasCustomEntity(ItemStack stack)
+    {
+        return false;
+    }
+
+    @Override
+    public boolean showDurabilityBar(ItemStack stack)
+    {
+        return false;
+    }
+
+    // IRenderBauble implementation for proper rendering when worn as bauble
+    @Override
+    @Optional.Method(modid = "baubles")
+    @SideOnly(Side.CLIENT)
+    public void onPlayerBaubleRender(ItemStack stack, EntityPlayer player, RenderType type, float partialTicks)
+    {
+        // For Baubles rendering in 1.12.2, we need to ensure the armor model renders
+        // The key is that Baubles should treat this like armor
     }
 }

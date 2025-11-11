@@ -28,6 +28,8 @@ import com.google.common.cache.CacheBuilder;
 import net.dries007.holoInventory.Helper;
 import net.dries007.holoInventory.HoloInventory;
 import net.dries007.holoInventory.api.IHoloGlasses;
+import baubles.api.BaublesApi;
+import baubles.api.cap.IBaublesItemHandler;
 import net.dries007.holoInventory.items.ItemHoloGlasses;
 import net.dries007.holoInventory.client.renderers.FakeRenderer;
 import net.dries007.holoInventory.client.renderers.IRenderer;
@@ -39,6 +41,8 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -48,6 +52,8 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
@@ -219,5 +225,61 @@ public class ClientEventHandler
                 RenderHelper.end();
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onPlayerRenderPre(RenderPlayerEvent.Pre event)
+    {
+        if (!Loader.isModLoaded("baubles")) return;
+        
+        // Handle Baubles rendering for HoloGlasses
+        EntityPlayer player = event.getEntityPlayer();
+        ItemStack baublesGlasses = getBaublesHoloGlasses(player);
+        
+        if (!baublesGlasses.isEmpty())
+        {
+            // If player has HoloGlasses in baubles but not in helmet slot, temporarily set it
+            ItemStack helmet = player.getItemStackFromSlot(EntityEquipmentSlot.HEAD);
+            if (helmet.isEmpty())
+            {
+                // Temporarily set the glasses for rendering
+                player.setItemStackToSlot(EntityEquipmentSlot.HEAD, baublesGlasses);
+            }
+        }
+    }
+
+    @SubscribeEvent  
+    public void onPlayerRenderPost(RenderPlayerEvent.Post event)
+    {
+        if (!Loader.isModLoaded("baubles")) return;
+        
+        // Restore original helmet after rendering
+        EntityPlayer player = event.getEntityPlayer();
+        ItemStack baublesGlasses = getBaublesHoloGlasses(player);
+        
+        if (!baublesGlasses.isEmpty())
+        {
+            ItemStack helmet = player.getItemStackFromSlot(EntityEquipmentSlot.HEAD);
+            if (!helmet.isEmpty() && helmet.getItem() instanceof IHoloGlasses)
+            {
+                // Remove the glasses we temporarily added
+                player.setItemStackToSlot(EntityEquipmentSlot.HEAD, ItemStack.EMPTY);
+            }
+        }
+    }
+
+    @net.minecraftforge.fml.common.Optional.Method(modid = "baubles")
+    private ItemStack getBaublesHoloGlasses(EntityPlayer player)
+    {
+        IBaublesItemHandler baubles = BaublesApi.getBaublesHandler(player);
+        for (int i = 0; i < baubles.getSlots(); i++)
+        {
+            ItemStack stack = baubles.getStackInSlot(i);
+            if (!stack.isEmpty() && stack.getItem() instanceof IHoloGlasses)
+            {
+                return stack;
+            }
+        }
+        return ItemStack.EMPTY;
     }
 }

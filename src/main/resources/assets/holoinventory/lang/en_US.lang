@@ -1,4 +1,4 @@
-item.Hologlasses.name=Holo Glasses
-item.Hologlasses.tooltip=Enables holographic inventory displays
+item.hologlasses.name=Holo Glasses
+item.hologlasses.tooltip=Enables holographic inventory displays
 item.fluidRenderFakeItem.name=Fake Fluid Item
 key.categories.holoinventory=Holo Inventory
