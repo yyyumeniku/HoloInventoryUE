@@ -1,16 +1,16 @@
 {
     "type": "minecraft:crafting_shaped",
     "pattern": [
-        " G ",
-        "GRG",
+        "I I",
+        "GIG",
         "   "
     ],
     "key": {
         "G": {
             "item": "minecraft:glass"
         },
-        "R": {
-            "item": "minecraft:redstone"
+        "I": {
+            "item": "minecraft:iron_ingot"
         }
     },
     "result": {
