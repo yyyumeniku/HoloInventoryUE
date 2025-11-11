@@ -1,0 +1,20 @@
+{
+  "modListVersion": 2,
+  "modList": [{
+    "modid": "holoinventory",
+    "name": "HoloInventoryUE",
+    "description": "Holographic inventory screens with item requirements and Baubles support!",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://github.com/yyyumeniku/HoloInventoryUE",
+    "authorList": [ "yyyumeniku", "Dries007" ],
+    "credits": "Original code by Dries007, UE version by yyyumeniku, idea by Reddit (http://bit.ly/1UGnbbH)",
+    "logoFile": "",
+    "screenshots": [ "", "" ],
+    "parent": "",
+    "requiredMods": [ "forge" ],
+    "dependencies": [ ],
+    "dependants": [ ],
+    "useDependencyInformation": true
+  }]
+}

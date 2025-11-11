@@ -1,0 +1,113 @@
+import groovy.json.*
+
+// For those who want the bleeding edge
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+version = "2.3"
+if (System.getenv().BUILD_NUMBER != null) version += "." + System.getenv().BUILD_NUMBER
+
+targetCompatibility = sourceCompatibility = 1.8
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+group= "net.yyyumeniku.holoinventoryue"
+archivesBaseName = "HoloInventoryUE"
+
+minecraft {
+    version = "1.12.2-14.23.0.2491"
+    runDir = "run"
+    mappings = "snapshot_20171017"
+}
+
+repositories {
+    maven {
+        name = "progwml6"
+        url = "https://dvs1.progwml6.com/files/maven"
+    }
+    maven {
+        name = "chickenbones"
+        url = "https://chickenbones.net/maven/"
+    }
+    maven {
+        name = "CurseForge"
+        url = "https://cursemaven.com"
+    }
+}
+
+dependencies {
+    // Baubles is now completely optional - mod will build and run without it
+    // Uncomment the line below if you want to include Baubles for development
+    // compile files('libs/Baubles-1.12-1.5.2.jar')
+}
+
+processResources
+{
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+
+    doLast {
+        def updateFile = new File('update.json')
+        if (updateFile.exists())
+        {
+            def outStream = new ByteArrayOutputStream()
+            def result = exec {
+                executable = 'git'
+                args = [ 'log', '-n', '1', "--format='%B'"]
+                standardOutput = outStream
+            }
+            def fullLog = outStream.toString().replaceAll("^\\s*'\\s*|\\s*'\\s*\$", "")
+
+            def json = new JsonSlurper().parseText(updateFile.getText())
+            json['promos'][project.minecraft.version + '-latest'] = project.version
+            json['promos'][project.minecraft.version + '-recomended'] = project.version
+            if (!json.containsKey(project.minecraft.version)) json.put(project.minecraft.version, new HashMap<>())
+            def version = json[project.minecraft.version]
+            version.put(project.version, fullLog)
+            updateFile.write JsonOutput.prettyPrint(JsonOutput.toJson(json))
+        }
+    }
+}
+
+task deobfJar(type: Jar, dependsOn: 'jar') {
+    from "LICENSE.txt"
+    from sourceSets.main.output
+    classifier "dev"
+    appendix = project.minecraft.version
+}
+sourceJar {
+    from "LICENSE.txt"
+    exclude("com/**")
+    classifier "src"
+    appendix = project.minecraft.version
+}
+jar {
+    from "LICENSE.txt"
+    exclude("com/**")
+    appendix = project.minecraft.version
+}
+artifacts {
+    archives deobfJar
+}
