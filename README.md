@@ -1,14 +1,17 @@
-# HoloInventory-UEL
+# HoloInventoryUE
 
 Adds Holographic inventory screen for all blocks with an inventory.
 
-### New features in UEL:
+### New features in UE:
 - Mod is enabled by default
 - Hold H to show -> Press H to toggle by default
 - Sneak/sprint to show set to false by default
+- Item requirement system: Requires Holo Glasses to view inventories
+- Baubles mod compatibility: Holo Glasses can be worn as a bauble
 - New config options:
   Toggleable name display, respectively for merchants and containers
   Adjustable rotation speed, set to 0.0 to turn the rotation off
+  Option to require glasses for viewing inventories
 
 ---
 ##### Old readme
@@ -22,7 +25,8 @@ Based on idea of [this reddit thread](http://www.reddit.com/r/Minecraft/comments
 
 If you find spelling mistakes, let me know!
 
-(c) Copyright  Dries007.net 2013 - 2017
+Original mod (c) Copyright Dries007.net 2013 - 2017
+UE modifications by yyyumeniku
 
 ### Donate
 If you want to donate to me (dries007), you can [paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=M6XDAP29UDX7Q) or [patreon](http://www.patreon.com/dries007) me.

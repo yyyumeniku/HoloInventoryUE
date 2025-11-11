@@ -15,7 +15,7 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "2.2"
+version = "2.3"
 if (System.getenv().BUILD_NUMBER != null) version += "." + System.getenv().BUILD_NUMBER
 
 targetCompatibility = sourceCompatibility = 1.8
@@ -23,8 +23,8 @@ compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
 }
 
-group= "net.dries007.holoinventory"
-archivesBaseName = "HoloInventory"
+group= "net.yyyumeniku.holoinventoryue"
+archivesBaseName = "HoloInventoryUE"
 
 minecraft {
     version = "1.12.2-14.23.0.2491"
@@ -32,8 +32,25 @@ minecraft {
     mappings = "snapshot_20171017"
 }
 
+repositories {
+    maven {
+        name = "progwml6"
+        url = "https://dvs1.progwml6.com/files/maven"
+    }
+    maven {
+        name = "chickenbones"
+        url = "https://chickenbones.net/maven/"
+    }
+    maven {
+        name = "CurseForge"
+        url = "https://cursemaven.com"
+    }
+}
+
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    // Baubles is now completely optional - mod will build and run without it
+    // Uncomment the line below if you want to include Baubles for development
+    // compile files('libs/Baubles-1.12-1.5.2.jar')
 }
 
 processResources

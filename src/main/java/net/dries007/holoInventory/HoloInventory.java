@@ -25,13 +25,18 @@ package net.dries007.holoInventory;
 
 import com.google.common.collect.Sets;
 import net.dries007.holoInventory.client.ClientEventHandler;
+import net.dries007.holoInventory.items.ItemHoloGlasses;
 import net.dries007.holoInventory.network.request.EntityRequest;
 import net.dries007.holoInventory.network.request.TileRequest;
 import net.dries007.holoInventory.network.response.MerchantRecipes;
 import net.dries007.holoInventory.network.response.PlainInventory;
 import net.dries007.holoInventory.server.ServerEventHandler;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ModMetadata;
@@ -42,6 +47,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import org.apache.logging.log4j.Logger;
 
 import static net.dries007.holoInventory.HoloInventory.*;
@@ -63,6 +70,8 @@ public class HoloInventory
     private SimpleNetworkWrapper snw;
     private Logger logger;
     private Configuration config;
+    
+    public static ItemHoloGlasses holoGlasses;
 
     @Mod.EventHandler
     public void disableEvent(FMLModDisabledEvent event)
@@ -77,6 +86,9 @@ public class HoloInventory
 
         config = new Configuration(event.getSuggestedConfigurationFile());
         updateConfig();
+
+        // Initialize items
+        holoGlasses = new ItemHoloGlasses();
 
         int id = 0;
         snw = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
@@ -97,6 +109,20 @@ public class HoloInventory
 
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(ServerEventHandler.I);
+    }
+
+    @SubscribeEvent
+    public void items(RegistryEvent.Register<Item> event)
+    {
+        event.getRegistry().register(holoGlasses);
+    }
+
+    @SubscribeEvent
+    @SideOnly(Side.CLIENT)
+    public void registerModels(ModelRegistryEvent event)
+    {
+        ModelLoader.setCustomModelResourceLocation(holoGlasses, 0, 
+            new ModelResourceLocation(holoGlasses.getRegistryName(), "inventory"));
     }
 
     @Mod.EventHandler
@@ -125,6 +151,8 @@ public class HoloInventory
         Helper.showOnSneak = config.get(MODID, "showOnSneak", false, "Show on sneak, bypasses other keyboard settings.").setRequiresWorldRestart(false).setRequiresMcRestart(false).getBoolean();
         Helper.showOnSprint = config.get(MODID, "showOnSprint", false, "Show on sprint, bypasses other keyboard settings.").setRequiresWorldRestart(false).setRequiresMcRestart(false).getBoolean();
         Helper.banned = Sets.newHashSet(config.get(MODID, "banned", new String[0]).setRequiresWorldRestart(false).setRequiresMcRestart(false).getStringList());
+
+        Helper.requireGlasses = config.get(MODID, "requireGlasses", true, "Require HoloGlasses to see holographic inventory displays.").setRequiresWorldRestart(false).setRequiresMcRestart(false).getBoolean();
 
         Helper.rotationSpeed = config.get(
             MODID,

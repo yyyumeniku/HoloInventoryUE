@@ -27,6 +27,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import net.dries007.holoInventory.Helper;
 import net.dries007.holoInventory.HoloInventory;
+import net.dries007.holoInventory.api.IHoloGlasses;
+import net.dries007.holoInventory.items.ItemHoloGlasses;
 import net.dries007.holoInventory.client.renderers.FakeRenderer;
 import net.dries007.holoInventory.client.renderers.IRenderer;
 import net.dries007.holoInventory.client.renderers.RenderHelper;
@@ -35,6 +37,7 @@ import net.dries007.holoInventory.network.request.TileRequest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -130,6 +133,17 @@ public class ClientEventHandler
                 (!Helper.showOnSneak && !Helper.showOnSprint && keyHold.getKeyCode() == 0 && keyToggle.getKeyCode() == 0);
 
         if (!enabled) return;
+
+        // Check if HoloGlasses are required and equipped
+        if (Helper.requireGlasses)
+        {
+            if (mc.player == null) return;
+            ItemStack glasses = ItemHoloGlasses.getHoloGlasses(mc.player);
+            if (glasses.isEmpty() || !(glasses.getItem() instanceof IHoloGlasses) || !((IHoloGlasses) glasses.getItem()).shouldRender(glasses))
+            {
+                return;
+            }
+        }
 
         TILE_CACHE.cleanUp();
         ENTITY_CACHE.cleanUp();
